@@ -1,13 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, FileText, ClipboardList, Calendar, Menu, X } from "lucide-react";
+import { Home, FileText, ClipboardList, Calendar, Users, Menu, X, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navItems = [
-  { path: "/", label: "Home", icon: BookOpen },
+  { path: "/", label: "Home", icon: Home },
   { path: "/notes", label: "Notes", icon: FileText },
   { path: "/mock-test", label: "Mock Test", icon: ClipboardList },
   { path: "/planner", label: "Study Planner", icon: Calendar },
+  { path: "/about", label: "About Us", icon: Users },
 ];
 
 const Navbar = () => {
@@ -15,10 +16,10 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border">
-      <div className="container mx-auto px-4 flex items-center justify-between h-16">
+    <nav className="sticky top-0 z-50 bg-card/90 backdrop-blur-lg border-b border-border">
+      <div className="container mx-auto px-6 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2 group">
-          <span className="text-2xl">🧞‍♂️</span>
+          <Sparkles className="w-6 h-6 text-primary" />
           <span className="text-xl font-extrabold text-gradient-primary">PrepGenie</span>
         </Link>
 
@@ -30,10 +31,10 @@ const Navbar = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-soft"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    ? "border-2 border-primary text-primary bg-primary/5"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary border-2 border-transparent"
                 }`}
               >
                 <item.icon className="w-4 h-4" />
@@ -71,8 +72,8 @@ const Navbar = () => {
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-all ${
                       isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                        ? "border-2 border-primary text-primary bg-primary/5"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary border-2 border-transparent"
                     }`}
                   >
                     <item.icon className="w-4 h-4" />
