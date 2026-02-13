@@ -1,8 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FileText, ClipboardList, Calendar, Sparkles, ArrowRight, Star, BookOpen, Lightbulb } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import genieHero from "@/assets/genie-hero.png";
 import genieSmall from "@/assets/genie-small.png";
 
 const fadeUp = {
@@ -55,67 +53,64 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="gradient-hero relative overflow-hidden">
-        <div className="container mx-auto px-4 py-16 md:py-24">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <motion.div {...fadeUp} className="text-center md:text-left">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-6"
-              >
-                <Sparkles className="w-4 h-4" />
-                Your AI Study Companion
-              </motion.div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
-                <span className="text-gradient-primary">PrepGenie</span>
-                <br />
-                <span className="text-foreground">Your AI Study Assistant</span>
-              </h1>
-              <p className="text-lg text-muted-foreground mb-8 max-w-lg">
-                Notes, Tests, Timetables — all generated in seconds. Let the genie handle the hard work while you focus on learning.
-              </p>
-              <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                <Button asChild size="lg" className="gradient-cta text-primary-foreground font-bold shadow-soft hover:shadow-glow transition-shadow">
-                  <Link to="/notes">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Generate Notes
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="font-bold border-primary/20 hover:bg-primary/5">
-                  <Link to="/mock-test">
-                    <ClipboardList className="w-4 h-4 mr-2" />
-                    Create Mock Test
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="secondary" className="font-bold">
-                  <Link to="/planner">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Build Study Plan
-                  </Link>
-                </Button>
-              </div>
-            </motion.div>
+      <section className="gradient-hero relative overflow-hidden min-h-[80vh] flex items-center">
+        {/* Decorative circles */}
+        <div className="absolute top-8 -left-8 w-28 h-28 rounded-full bg-genie-gold/40" />
+        <div className="absolute bottom-8 right-4 w-20 h-20 rounded-full bg-genie-lavender/60" />
+        <div className="absolute top-1/3 right-1/4 w-4 h-4 rounded-full bg-genie-gold animate-sparkle" />
 
+        <div className="container mx-auto px-4 py-16 md:py-24 text-center relative z-10">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold italic text-gradient-primary mb-6">
+              PrepGenie
+            </h1>
+            <h2 className="text-xl md:text-2xl font-semibold text-foreground mb-4">
+              Your AI Study Assistant
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto mb-10 text-lg">
+              Generate personalized notes, create mock tests, and build custom study plans with the power of AI
+            </p>
+
+            <div className="flex flex-wrap gap-4 justify-center mb-16">
+              <Link
+                to="/notes"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-primary-foreground bg-gradient-to-r from-genie-purple to-primary shadow-soft hover:shadow-glow transition-all text-sm md:text-base"
+              >
+                <FileText className="w-5 h-5" />
+                Generate Notes
+              </Link>
+              <Link
+                to="/mock-test"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-primary-foreground bg-gradient-to-r from-success to-genie-green shadow-soft hover:scale-105 transition-all text-sm md:text-base"
+              >
+                <ClipboardList className="w-5 h-5" />
+                Create Mock Test
+              </Link>
+              <Link
+                to="/planner"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-primary-foreground bg-gradient-to-r from-genie-gold to-destructive shadow-soft hover:scale-105 transition-all text-sm md:text-base"
+              >
+                <Calendar className="w-5 h-5" />
+                Build Study Plan
+              </Link>
+            </div>
+
+            {/* Sparkle icon */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
               className="flex justify-center"
             >
-              <img
-                src={genieHero}
-                alt="PrepGenie - AI Study Assistant"
-                className="w-72 md:w-96 animate-float drop-shadow-2xl"
-              />
+              <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center relative">
+                <Sparkles className="w-10 h-10 text-primary" />
+                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-genie-gold flex items-center justify-center">
+                  <Star className="w-3 h-3 text-accent-foreground" />
+                </div>
+              </div>
             </motion.div>
-          </div>
+          </motion.div>
         </div>
-        {/* Decorative elements */}
-        <div className="absolute top-10 left-10 w-3 h-3 rounded-full bg-genie-gold animate-sparkle" />
-        <div className="absolute top-32 right-20 w-2 h-2 rounded-full bg-genie-purple animate-sparkle delay-300" />
-        <div className="absolute bottom-20 left-1/4 w-2 h-2 rounded-full bg-genie-pink animate-sparkle delay-700" />
       </section>
 
       {/* Features */}
@@ -126,17 +121,11 @@ const Index = () => {
               Everything You Need to <span className="text-gradient-primary">Ace Your Exams</span>
             </motion.h2>
             <motion.p variants={fadeUp} className="text-muted-foreground max-w-2xl mx-auto">
-              Three powerful tools, one magical assistant. PrepGenie adapts to your needs.
+              Three powerful tools, one magical assistant.
             </motion.p>
           </motion.div>
 
-          <motion.div
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-            variants={stagger}
-            className="grid md:grid-cols-3 gap-6"
-          >
+          <motion.div initial="initial" whileInView="animate" viewport={{ once: true }} variants={stagger} className="grid md:grid-cols-3 gap-6">
             {features.map((feature) => (
               <motion.div key={feature.title} variants={fadeUp}>
                 <Link to={feature.link} className="block group">
@@ -161,19 +150,10 @@ const Index = () => {
       <section className="py-20 bg-secondary/30">
         <div className="container mx-auto px-4">
           <motion.div initial="initial" whileInView="animate" viewport={{ once: true }} variants={stagger} className="text-center mb-14">
-            <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-extrabold mb-4">
-              How It Works
-            </motion.h2>
+            <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-extrabold mb-4">How It Works</motion.h2>
             <motion.p variants={fadeUp} className="text-muted-foreground">Three simple steps to study smarter.</motion.p>
           </motion.div>
-
-          <motion.div
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-            variants={stagger}
-            className="grid md:grid-cols-3 gap-8"
-          >
+          <motion.div initial="initial" whileInView="animate" viewport={{ once: true }} variants={stagger} className="grid md:grid-cols-3 gap-8">
             {steps.map((step) => (
               <motion.div key={step.number} variants={fadeUp} className="text-center">
                 <div className="w-16 h-16 mx-auto mb-5 rounded-2xl gradient-cta flex items-center justify-center shadow-soft">
@@ -195,14 +175,7 @@ const Index = () => {
               Students Love <span className="text-gradient-primary">PrepGenie</span>
             </motion.h2>
           </motion.div>
-
-          <motion.div
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-            variants={stagger}
-            className="grid md:grid-cols-3 gap-6"
-          >
+          <motion.div initial="initial" whileInView="animate" viewport={{ once: true }} variants={stagger} className="grid md:grid-cols-3 gap-6">
             {testimonials.map((t) => (
               <motion.div key={t.name} variants={fadeUp}>
                 <div className="gradient-card rounded-2xl p-8 shadow-card border border-border/50 h-full">
@@ -227,19 +200,18 @@ const Index = () => {
       <section className="py-20 gradient-hero">
         <div className="container mx-auto px-4 text-center">
           <motion.div initial="initial" whileInView="animate" viewport={{ once: true }} variants={stagger}>
-            <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-extrabold mb-4">
-              Ready to Study Smarter?
-            </motion.h2>
+            <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-extrabold mb-4">Ready to Study Smarter?</motion.h2>
             <motion.p variants={fadeUp} className="text-muted-foreground mb-8 max-w-lg mx-auto">
               Join thousands of students who trust PrepGenie for their exam preparation.
             </motion.p>
             <motion.div variants={fadeUp}>
-              <Button asChild size="lg" className="gradient-cta text-primary-foreground font-bold shadow-soft hover:shadow-glow transition-shadow">
-                <Link to="/notes">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Get Started Free
-                </Link>
-              </Button>
+              <Link
+                to="/notes"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-primary-foreground gradient-cta shadow-soft hover:shadow-glow transition-all"
+              >
+                <Sparkles className="w-4 h-4" />
+                Get Started Free
+              </Link>
             </motion.div>
           </motion.div>
         </div>

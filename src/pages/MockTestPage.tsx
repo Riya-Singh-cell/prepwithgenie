@@ -4,7 +4,7 @@ import { ClipboardList, Sparkles, Timer, CheckCircle2, XCircle, RotateCcw } from
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import genieSmall from "@/assets/genie-small.png";
 
 type Question = {
@@ -23,19 +23,20 @@ const sampleQuestions: Question[] = [
   { id: 5, question: "What is the main pigment involved in photosynthesis?", options: ["Carotene", "Chlorophyll", "Xanthophyll", "Anthocyanin"], correct: 1, type: "MCQ" },
 ];
 
-const questionTypes = [
-  { id: "mcq", label: "MCQ" },
-  { id: "truefalse", label: "True/False" },
-  { id: "match", label: "Match the Following" },
-  { id: "output", label: "Output-Based" },
-  { id: "qa", label: "Q&A" },
+const questionTypeCards = [
+  { id: "mcq", label: "Multiple Choice Questions", color: "border-genie-gold bg-genie-gold/10", textColor: "text-genie-gold font-bold", desc: "Quick assessment" },
+  { id: "truefalse", label: "True/False Questions", color: "border-destructive bg-destructive/10", textColor: "text-destructive font-bold", desc: "Quick assessment" },
+  { id: "short", label: "Short Answer Questions", color: "border-genie-green bg-genie-green/10", textColor: "text-genie-green font-bold", desc: "Brief responses" },
+  { id: "essay", label: "Essay Questions", color: "border-genie-purple bg-genie-purple/10", textColor: "text-genie-purple font-bold", desc: "Detailed answers" },
 ];
 
 const MockTestPage = () => {
   const [examName, setExamName] = useState("");
+  const [examType, setExamType] = useState("");
   const [syllabus, setSyllabus] = useState("");
-  const [selectedTypes, setSelectedTypes] = useState<string[]>(["mcq"]);
-  const [numQuestions, setNumQuestions] = useState("5");
+  const [questionCounts, setQuestionCounts] = useState<Record<string, string>>({
+    mcq: "5", truefalse: "3", short: "2", essay: "1",
+  });
   const [showTest, setShowTest] = useState(false);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -55,19 +56,12 @@ const MockTestPage = () => {
   };
 
   const handleSubmit = () => setSubmitted(true);
-
-  const score = submitted
-    ? sampleQuestions.filter((q) => answers[q.id] === q.correct).length
-    : 0;
-
-  const handleRetake = () => {
-    setAnswers({});
-    setSubmitted(false);
-  };
+  const score = submitted ? sampleQuestions.filter((q) => answers[q.id] === q.correct).length : 0;
+  const handleRetake = () => { setAnswers({}); setSubmitted(false); };
 
   return (
     <div className="min-h-screen">
-      <section className="gradient-hero py-12">
+      <section className="gradient-hero py-8">
         <div className="container mx-auto px-4 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-4">
@@ -81,95 +75,105 @@ const MockTestPage = () => {
       </section>
 
       {!showTest ? (
-        <section className="py-12">
-          <div className="container mx-auto px-4 max-w-2xl">
+        <section className="py-10">
+          <div className="container mx-auto px-4 max-w-4xl">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="gradient-card rounded-2xl p-8 shadow-card border border-border/50"
+              className="bg-card rounded-2xl p-8 shadow-card border border-border/50"
             >
-              <div className="space-y-5">
+              {/* Basic Information */}
+              <h2 className="text-xl font-extrabold mb-6">Basic Information</h2>
+              <div className="grid md:grid-cols-2 gap-6 mb-8">
                 <div>
-                  <label className="text-sm font-semibold mb-2 block">Exam Name</label>
-                  <Input placeholder="e.g., Biology Final, JEE Main" value={examName} onChange={(e) => setExamName(e.target.value)} />
+                  <label className="text-sm font-bold mb-2 block">Exam Name</label>
+                  <Input placeholder="e.g., Biology Chapter 1 Test" value={examName} onChange={(e) => setExamName(e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold mb-2 block">Syllabus / Topics</label>
-                  <Textarea placeholder="List the topics for the test..." value={syllabus} onChange={(e) => setSyllabus(e.target.value)} rows={3} />
+                  <label className="text-sm font-bold mb-2 block">Exam Type</label>
+                  <Select value={examType} onValueChange={setExamType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select exam type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="board">Board Exam</SelectItem>
+                      <SelectItem value="entrance">Entrance Exam</SelectItem>
+                      <SelectItem value="competitive">Competitive Exam</SelectItem>
+                      <SelectItem value="university">University Exam</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div>
-                  <label className="text-sm font-semibold mb-3 block">Question Types</label>
-                  <div className="flex flex-wrap gap-4">
-                    {questionTypes.map((qt) => (
-                      <label key={qt.id} className="flex items-center gap-2 text-sm cursor-pointer">
-                        <Checkbox
-                          checked={selectedTypes.includes(qt.id)}
-                          onCheckedChange={(checked) => {
-                            setSelectedTypes((prev) =>
-                              checked ? [...prev, qt.id] : prev.filter((t) => t !== qt.id)
-                            );
-                          }}
-                        />
-                        {qt.label}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-semibold mb-2 block">Number of Questions</label>
-                  <Input type="number" min="1" max="50" value={numQuestions} onChange={(e) => setNumQuestions(e.target.value)} />
-                </div>
-                <Button onClick={handleGenerate} className="w-full gradient-cta text-primary-foreground font-bold shadow-soft hover:shadow-glow transition-shadow" size="lg">
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Generate My Mock Test
-                </Button>
               </div>
+
+              {/* Syllabus */}
+              <h2 className="text-xl font-extrabold mb-4">Syllabus & Topics</h2>
+              <div className="mb-2">
+                <label className="text-sm font-bold mb-2 block">Syllabus Content</label>
+                <Textarea
+                  placeholder={`Enter the topics and syllabus content for your test. For example:\n\n• Cell Biology: Cell structure, organelles, cell membrane\n• Genetics: DNA, RNA, protein synthesis\n• Evolution: Natural selection, adaptation\n\nOr paste your complete syllabus here...`}
+                  value={syllabus}
+                  onChange={(e) => setSyllabus(e.target.value)}
+                  rows={6}
+                />
+              </div>
+              <p className="text-sm text-muted-foreground mb-8">Provide detailed topics and subtopics to generate more relevant questions</p>
+
+              {/* Question Types */}
+              <h2 className="text-xl font-extrabold mb-6">Question Types & Quantities</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {questionTypeCards.map((qt) => (
+                  <div key={qt.id} className={`rounded-xl border-2 p-4 ${qt.color}`}>
+                    <p className={`text-sm mb-3 ${qt.textColor}`}>{qt.label}</p>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="50"
+                      value={questionCounts[qt.id]}
+                      onChange={(e) => setQuestionCounts((prev) => ({ ...prev, [qt.id]: e.target.value }))}
+                      className="mb-1"
+                    />
+                    <p className="text-xs text-muted-foreground">{qt.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              <Button onClick={handleGenerate} className="w-full gradient-cta text-primary-foreground font-bold shadow-soft hover:shadow-glow transition-shadow" size="lg">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate My Mock Test
+              </Button>
             </motion.div>
           </div>
         </section>
       ) : (
-        <section className="py-12">
+        <section className="py-10">
           <div className="container mx-auto px-4 max-w-3xl">
-            {/* Genie tip */}
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 bg-accent/20 rounded-xl px-5 py-3 mb-8">
               <img src={genieSmall} alt="Genie" className="w-8 h-8" />
-              <div>
-                <p className="text-sm font-semibold text-accent-foreground">
-                  <Timer className="w-3 h-3 inline mr-1" />
-                  Tip: Try to answer within 1 minute per question for best practice!
-                </p>
-              </div>
+              <p className="text-sm font-semibold text-accent-foreground">
+                <Timer className="w-3 h-3 inline mr-1" />
+                Tip: Try to answer within 1 minute per question for best practice!
+              </p>
             </motion.div>
 
             {submitted && (
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center mb-8 gradient-card rounded-2xl p-8 shadow-card border border-border/50">
-                <h2 className="text-2xl font-extrabold mb-2">
-                  Your Score: {score}/{sampleQuestions.length}
-                </h2>
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center mb-8 bg-card rounded-2xl p-8 shadow-card border border-border/50">
+                <h2 className="text-2xl font-extrabold mb-2">Your Score: {score}/{sampleQuestions.length}</h2>
                 <p className="text-muted-foreground mb-4">
-                  {score === sampleQuestions.length ? "🎉 Perfect score! You're amazing!" : score >= 3 ? "👏 Great job! Keep practicing!" : "💪 Keep studying, you'll get there!"}
+                  {score === sampleQuestions.length ? "🎉 Perfect score!" : score >= 3 ? "👏 Great job!" : "💪 Keep studying!"}
                 </p>
                 <Button onClick={handleRetake} variant="outline" className="font-semibold">
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Retake Test
+                  <RotateCcw className="w-4 h-4 mr-2" /> Retake Test
                 </Button>
               </motion.div>
             )}
 
             <div className="space-y-5">
               {sampleQuestions.map((q, i) => (
-                <motion.div
-                  key={q.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="gradient-card rounded-2xl p-6 shadow-card border border-border/50"
-                >
+                <motion.div key={q.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="bg-card rounded-2xl p-6 shadow-card border border-border/50">
                   <div className="flex items-start gap-3 mb-4">
-                    <span className="flex-shrink-0 w-8 h-8 rounded-lg gradient-cta flex items-center justify-center text-primary-foreground text-sm font-bold">
-                      {i + 1}
-                    </span>
+                    <span className="flex-shrink-0 w-8 h-8 rounded-lg gradient-cta flex items-center justify-center text-primary-foreground text-sm font-bold">{i + 1}</span>
                     <div>
                       <span className="text-xs font-semibold text-muted-foreground">{q.type}</span>
                       <p className="font-semibold">{q.question}</p>
@@ -181,19 +185,9 @@ const MockTestPage = () => {
                       const isCorrect = submitted && idx === q.correct;
                       const isWrong = submitted && isSelected && idx !== q.correct;
                       return (
-                        <button
-                          key={idx}
-                          onClick={() => handleAnswer(q.id, idx)}
-                          className={`text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
-                            isCorrect
-                              ? "border-success bg-success/10 text-foreground"
-                              : isWrong
-                              ? "border-destructive bg-destructive/10 text-foreground"
-                              : isSelected
-                              ? "border-primary bg-primary/10 text-foreground"
-                              : "border-border hover:border-primary/40 hover:bg-secondary/50"
-                          }`}
-                        >
+                        <button key={idx} onClick={() => handleAnswer(q.id, idx)} className={`text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
+                          isCorrect ? "border-success bg-success/10" : isWrong ? "border-destructive bg-destructive/10" : isSelected ? "border-primary bg-primary/10" : "border-border hover:border-primary/40 hover:bg-secondary/50"
+                        }`}>
                           <span className="flex items-center gap-2">
                             {isCorrect && <CheckCircle2 className="w-4 h-4 text-success" />}
                             {isWrong && <XCircle className="w-4 h-4 text-destructive" />}
