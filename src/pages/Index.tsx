@@ -44,11 +44,6 @@ const steps = [
   { number: "3", title: "Study & Succeed", description: "Use your materials to ace your exams!", icon: Lightbulb },
 ];
 
-const testimonials = [
-  { name: "Priya S.", quote: "PrepGenie made my exam prep so much easier. The notes were spot on!", rating: 5 },
-  { name: "Arjun K.", quote: "The mock tests helped me identify my weak areas. Scored 95% in my finals!", rating: 5 },
-  { name: "Sarah M.", quote: "The study planner kept me organized throughout the semester. Love it!", rating: 5 },
-];
 
 const Index = () => {
   return (
@@ -163,34 +158,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <motion.div initial="initial" whileInView="animate" viewport={{ once: true }} variants={stagger} className="text-center mb-14">
-            <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-extrabold mb-4">
-              Students Love <span className="text-gradient-primary">PrepGenie</span>
-            </motion.h2>
-          </motion.div>
-          <motion.div initial="initial" whileInView="animate" viewport={{ once: true }} variants={stagger} className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((t) => (
-              <motion.div key={t.name} variants={fadeUp}>
-                <div className="gradient-card rounded-2xl p-8 shadow-card border border-border/50 h-full">
-                  <div className="flex gap-1 mb-4">
-                    {Array.from({ length: t.rating }).map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-genie-gold text-genie-gold" />
-                    ))}
-                  </div>
-                  <p className="text-foreground mb-4 italic">"{t.quote}"</p>
-                  <div className="flex items-center gap-3">
-                    <img src={genieSmall} alt="Student" className="w-8 h-8 rounded-full" />
-                    <span className="font-semibold text-sm">{t.name}</span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
 
       {/* CTA */}
       <section className="py-20 gradient-hero">
