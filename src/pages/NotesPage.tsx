@@ -1,27 +1,61 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { FileText, Sparkles, BookOpen, ChevronDown } from "lucide-react";
+import { FileText, Sparkles, BookOpen, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import genieSmall from "@/assets/genie-small.png";
+import { getGroqClient } from "@/lib/groq";
+import { useToast } from "@/hooks/use-toast";
 
-const sampleNotes = [
-  { topic: "Cell Structure & Organization", notes: "Cells are the fundamental unit of life. Key organelles include the nucleus (stores DNA), mitochondria (energy production), endoplasmic reticulum (protein synthesis), and Golgi apparatus (packaging & transport).", tip: "Revise this first!" },
-  { topic: "Photosynthesis", notes: "The process by which green plants convert light energy into chemical energy. Occurs in chloroplasts. Light reactions happen in thylakoids, Calvin cycle in the stroma. Overall equation: 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂", tip: "Draw the diagram for better retention" },
-  { topic: "DNA Replication", notes: "Semi-conservative process where DNA unwinds at the origin of replication. Helicase unzips the double helix. DNA polymerase III synthesizes the new strand in the 5' to 3' direction. Leading strand is continuous, lagging strand forms Okazaki fragments.", tip: "Focus on enzyme names" },
-];
+interface Note {
+  topic: string;
+  notes: string;
+  tip: string;
+}
 
 const NotesPage = () => {
   const [subject, setSubject] = useState("");
   const [examType, setExamType] = useState("");
   const [syllabus, setSyllabus] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedNotes, setGeneratedNotes] = useState<Note[]>([]);
+  const { toast } = useToast();
 
-  const handleGenerate = () => {
-    if (subject && examType) {
+  const handleGenerate = async () => {
+    if (!subject || !examType) {
+      toast({ title: "Missing fields", description: "Please enter your subject and exam type.", variant: "destructive" });
+      return;
+    }
+    
+    setIsGenerating(true);
+    try {
+      const client = getGroqClient();
+      const prompt = `Generate study notes for the subject "${subject}" preparing for an "${examType}" exam.
+      Syllabus/Topics: ${syllabus || "General overview of key concepts."}
+      Return the response as a JSON array where each object has the keys: "topic", "notes", and "tip".
+      "topic" is the concept name. "notes" is a well-formatted summary of the concept. "tip" is a quick study tip.
+      Output ONLY raw JSON format, no markdown tags and nothing else.`;
+      
+      const response = await client.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+      });
+      
+      const textResponse = response.choices[0]?.message?.content || "[]";
+      const cleanJson = textResponse.replace(/^```json\n|\n```$/g, "").trim();
+      const notes = JSON.parse(cleanJson);
+      
+      setGeneratedNotes(notes);
       setShowResults(true);
+    } catch (error: any) {
+      toast({ title: "Generation Failed", description: error.message || "Failed to generate notes. Check your API key.", variant: "destructive" });
+      console.error(error);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -77,9 +111,9 @@ const NotesPage = () => {
                 <label className="text-sm font-semibold mb-2 block">Syllabus / Topics</label>
                 <Textarea placeholder="Paste your syllabus or list the topics you need notes for..." value={syllabus} onChange={(e) => setSyllabus(e.target.value)} rows={4} />
               </div>
-              <Button onClick={handleGenerate} className="w-full gradient-cta text-primary-foreground font-bold shadow-soft hover:shadow-glow transition-shadow" size="lg">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Generate Notes
+              <Button onClick={handleGenerate} disabled={isGenerating} className="w-full gradient-cta text-primary-foreground font-bold shadow-soft hover:shadow-glow transition-shadow" size="lg">
+                {isGenerating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                {isGenerating ? "Generating..." : "Generate Notes"}
               </Button>
             </div>
           </motion.div>
@@ -95,7 +129,7 @@ const NotesPage = () => {
             </motion.div>
 
             <div className="space-y-5">
-              {sampleNotes.map((note, i) => (
+              {generatedNotes.map((note, i) => (
                 <motion.div
                   key={note.topic}
                   initial={{ opacity: 0, y: 20 }}

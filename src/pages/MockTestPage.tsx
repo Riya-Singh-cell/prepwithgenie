@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ClipboardList, Sparkles, Timer, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
+import { ClipboardList, Sparkles, Timer, CheckCircle2, XCircle, RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import genieSmall from "@/assets/genie-small.png";
+import { getGroqClient } from "@/lib/groq";
+import { useToast } from "@/hooks/use-toast";
 
 type Question = {
   id: number;
@@ -13,15 +15,10 @@ type Question = {
   options: string[];
   correct: number;
   type: string;
+  idealAnswer?: string;
 };
 
-const sampleQuestions: Question[] = [
-  { id: 1, question: "What is the powerhouse of the cell?", options: ["Nucleus", "Mitochondria", "Ribosome", "Golgi body"], correct: 1, type: "MCQ" },
-  { id: 2, question: "DNA replication is semi-conservative.", options: ["True", "False"], correct: 0, type: "True/False" },
-  { id: 3, question: "Which enzyme unzips the DNA double helix?", options: ["DNA Polymerase", "Ligase", "Helicase", "Primase"], correct: 2, type: "MCQ" },
-  { id: 4, question: "Photosynthesis occurs in the mitochondria.", options: ["True", "False"], correct: 1, type: "True/False" },
-  { id: 5, question: "What is the main pigment involved in photosynthesis?", options: ["Carotene", "Chlorophyll", "Xanthophyll", "Anthocyanin"], correct: 1, type: "MCQ" },
-];
+
 
 const questionTypeCards = [
   { id: "mcq", label: "Multiple Choice Questions", color: "border-genie-gold bg-genie-gold/10", textColor: "text-genie-gold font-bold", desc: "Quick assessment" },
@@ -35,28 +32,68 @@ const MockTestPage = () => {
   const [examType, setExamType] = useState("");
   const [syllabus, setSyllabus] = useState("");
   const [questionCounts, setQuestionCounts] = useState<Record<string, string>>({
-    mcq: "5", truefalse: "3", short: "2", essay: "1",
+    mcq: "5", truefalse: "3", short: "2", essay: "1"
   });
   const [showTest, setShowTest] = useState(false);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [answers, setAnswers] = useState<Record<number, string | number>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedQuestions, setGeneratedQuestions] = useState<Question[]>([]);
+  const { toast } = useToast();
 
-  const handleGenerate = () => {
-    if (examName) {
-      setShowTest(true);
+  const handleGenerate = async () => {
+    if (!examName || !examType) {
+      toast({ title: "Incomplete details", description: "Please provide an exam name and type.", variant: "destructive" });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const client = getGroqClient();
+      const prompt = `Generate a mock test for the exam "${examName}" (Type: ${examType}).
+      Syllabus/Topics to cover: ${syllabus || "General topics for this exam."}
+      Generate ${questionCounts.mcq || 0} Multiple Choice Questions, ${questionCounts.truefalse || 0} True/False Questions, ${questionCounts.short || 0} Short Answer Questions, and ${questionCounts.essay || 0} Essay Questions.
+      Return the response strictly as a JSON array where each object represents a question with the following keys:
+      - "id": an integer starting from 1
+      - "question": the question text
+      - "options": an array of string choices (2 choices for True/False, 4 choices for MCQ). For Short/Essay, use an empty array [].
+      - "correct": the 0-indexed integer position of the correct option for MCQ/TF. For Short/Essay, use -1.
+      - "type": EXACTLY one of "MCQ", "True/False", "Short Answer", or "Essay"
+      - "idealAnswer": (Optional) Include a suggested answer or key points for Short Answer and Essay questions.
+      Output ONLY raw JSON format, no markdown tags and nothing else.`;
+
+      const response = await client.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+      });
+
+      const textResponse = response.choices[0]?.message?.content || "[]";
+      const cleanJson = textResponse.replace(/^```json\n|\n```$/g, "").trim();
+      const questions = JSON.parse(cleanJson);
+
+      setGeneratedQuestions(questions);
       setAnswers({});
       setSubmitted(false);
+      setShowTest(true);
+    } catch (error: any) {
+      toast({ title: "Generation Failed", description: error.message || "Failed to generate mock test. Check your API key.", variant: "destructive" });
+      console.error(error);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
-  const handleAnswer = (questionId: number, optionIdx: number) => {
+  const handleAnswer = (questionId: number, answerVal: string | number) => {
     if (!submitted) {
-      setAnswers((prev) => ({ ...prev, [questionId]: optionIdx }));
+      setAnswers((prev) => ({ ...prev, [questionId]: answerVal }));
     }
   };
 
   const handleSubmit = () => setSubmitted(true);
-  const score = submitted ? sampleQuestions.filter((q) => answers[q.id] === q.correct).length : 0;
+  
+  const scorableQuestions = generatedQuestions.filter(q => q.type === "MCQ" || q.type === "True/False");
+  const score = submitted ? scorableQuestions.filter((q) => answers[q.id] === q.correct).length : 0;
   const handleRetake = () => { setAnswers({}); setSubmitted(false); };
 
   return (
@@ -139,9 +176,9 @@ const MockTestPage = () => {
                 ))}
               </div>
 
-              <Button onClick={handleGenerate} className="w-full gradient-cta text-primary-foreground font-bold shadow-soft hover:shadow-glow transition-shadow" size="lg">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Generate My Mock Test
+              <Button onClick={handleGenerate} disabled={isGenerating} className="w-full gradient-cta text-primary-foreground font-bold shadow-soft hover:shadow-glow transition-shadow" size="lg">
+                {isGenerating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                {isGenerating ? "Generating Mock Test..." : "Generate My Mock Test"}
               </Button>
             </motion.div>
           </div>
@@ -159,9 +196,9 @@ const MockTestPage = () => {
 
             {submitted && (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center mb-8 bg-card rounded-2xl p-8 shadow-card border border-border/50">
-                <h2 className="text-2xl font-extrabold mb-2">Your Score: {score}/{sampleQuestions.length}</h2>
+                <h2 className="text-2xl font-extrabold mb-2">Automated Score: {score}/{scorableQuestions.length}</h2>
                 <p className="text-muted-foreground mb-4">
-                  {score === sampleQuestions.length ? "🎉 Perfect score!" : score >= 3 ? "👏 Great job!" : "💪 Keep studying!"}
+                  {scorableQuestions.length > 0 && score === scorableQuestions.length ? "🎉 Perfect score on objective questions!" : "💪 Keep studying! Review your subjective answers below."}
                 </p>
                 <Button onClick={handleRetake} variant="outline" className="font-semibold">
                   <RotateCcw className="w-4 h-4 mr-2" /> Retake Test
@@ -170,33 +207,53 @@ const MockTestPage = () => {
             )}
 
             <div className="space-y-5">
-              {sampleQuestions.map((q, i) => (
+              {generatedQuestions.map((q, i) => (
                 <motion.div key={q.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="bg-card rounded-2xl p-6 shadow-card border border-border/50">
                   <div className="flex items-start gap-3 mb-4">
                     <span className="flex-shrink-0 w-8 h-8 rounded-lg gradient-cta flex items-center justify-center text-primary-foreground text-sm font-bold">{i + 1}</span>
-                    <div>
+                    <div className="flex-1">
                       <span className="text-xs font-semibold text-muted-foreground">{q.type}</span>
                       <p className="font-semibold">{q.question}</p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 ml-11">
-                    {q.options.map((opt, idx) => {
-                      const isSelected = answers[q.id] === idx;
-                      const isCorrect = submitted && idx === q.correct;
-                      const isWrong = submitted && isSelected && idx !== q.correct;
-                      return (
-                        <button key={idx} onClick={() => handleAnswer(q.id, idx)} className={`text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
-                          isCorrect ? "border-success bg-success/10" : isWrong ? "border-destructive bg-destructive/10" : isSelected ? "border-primary bg-primary/10" : "border-border hover:border-primary/40 hover:bg-secondary/50"
-                        }`}>
-                          <span className="flex items-center gap-2">
-                            {isCorrect && <CheckCircle2 className="w-4 h-4 text-success" />}
-                            {isWrong && <XCircle className="w-4 h-4 text-destructive" />}
-                            {opt}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  
+                  {q.type === "MCQ" || q.type === "True/False" ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 ml-11">
+                      {q.options.map((opt, idx) => {
+                        const isSelected = answers[q.id] === idx;
+                        const isCorrect = submitted && idx === q.correct;
+                        const isWrong = submitted && isSelected && idx !== q.correct;
+                        return (
+                          <button key={idx} onClick={() => handleAnswer(q.id, idx)} className={`text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
+                            isCorrect ? "border-success bg-success/10" : isWrong ? "border-destructive bg-destructive/10" : isSelected ? "border-primary bg-primary/10" : "border-border hover:border-primary/40 hover:bg-secondary/50"
+                          }`}>
+                            <span className="flex items-center gap-2">
+                              {isCorrect && <CheckCircle2 className="w-4 h-4 text-success" />}
+                              {isWrong && <XCircle className="w-4 h-4 text-destructive" />}
+                              {opt}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="ml-11">
+                      <Textarea 
+                        placeholder="Write your answer here..." 
+                        value={answers[q.id] as string || ""} 
+                        onChange={(e) => handleAnswer(q.id, e.target.value)}
+                        disabled={submitted}
+                        rows={q.type === "Essay" ? 6 : 3}
+                        className="mb-4"
+                      />
+                      {submitted && q.idealAnswer && (
+                        <div className="mt-4 p-4 rounded-xl bg-accent/20 border border-border">
+                          <p className="text-sm font-semibold mb-2">💡 Ideal Answer / Key Points:</p>
+                          <p className="text-sm text-foreground leading-relaxed">{q.idealAnswer}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </motion.div>
               ))}
             </div>

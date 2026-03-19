@@ -1,12 +1,24 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Sparkles, Clock, BookOpen, Target, Settings2 } from "lucide-react";
+import { Calendar, Sparkles, Clock, BookOpen, Target, Settings2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import genieSmall from "@/assets/genie-small.png";
+import { getGroqClient } from "@/lib/groq";
+import { useToast } from "@/hooks/use-toast";
+
+interface Slot {
+  subject: string;
+  time: string;
+}
+
+interface DayPlan {
+  day: string;
+  slots: Slot[];
+}
 
 const subjectColors: Record<string, string> = {
   Biology: "bg-genie-green/20 text-foreground border-genie-green/40",
@@ -17,15 +29,7 @@ const subjectColors: Record<string, string> = {
   Revision: "bg-primary/10 text-foreground border-primary/30",
 };
 
-const samplePlan = [
-  { day: "Mon", slots: [{ subject: "Biology", time: "9-11 AM" }, { subject: "Mathematics", time: "2-4 PM" }, { subject: "Revision", time: "7-8 PM" }] },
-  { day: "Tue", slots: [{ subject: "Chemistry", time: "9-11 AM" }, { subject: "Physics", time: "2-4 PM" }, { subject: "English", time: "7-8 PM" }] },
-  { day: "Wed", slots: [{ subject: "Mathematics", time: "9-11 AM" }, { subject: "Biology", time: "2-4 PM" }, { subject: "Revision", time: "7-8 PM" }] },
-  { day: "Thu", slots: [{ subject: "Physics", time: "9-11 AM" }, { subject: "Chemistry", time: "2-4 PM" }, { subject: "English", time: "7-8 PM" }] },
-  { day: "Fri", slots: [{ subject: "Biology", time: "9-11 AM" }, { subject: "Mathematics", time: "2-4 PM" }, { subject: "Revision", time: "7-8 PM" }] },
-  { day: "Sat", slots: [{ subject: "Chemistry", time: "9-11 AM" }, { subject: "Physics", time: "2-4 PM" }] },
-  { day: "Sun", slots: [{ subject: "Revision", time: "10 AM-12 PM" }] },
-];
+
 
 const quotes = [
   "You got this! 💪",
@@ -40,10 +44,43 @@ const PlannerPage = () => {
   const [hours, setHours] = useState([4]);
   const [level, setLevel] = useState("");
   const [showPlan, setShowPlan] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedPlan, setGeneratedPlan] = useState<DayPlan[]>([]);
+  const { toast } = useToast();
 
-  const handleCreate = () => {
-    if (subjects) {
+  const handleCreate = async () => {
+    if (!subjects || !examDate || !level) {
+      toast({ title: "Missing fields", description: "Please fill in all details.", variant: "destructive" });
+      return;
+    }
+    
+    setIsGenerating(true);
+    try {
+      const client = getGroqClient();
+      const prompt = `Create a 7-day study timetable (Mon-Sun) for a student preparing for an exam on ${examDate}.
+      Subjects to study: ${subjects}. Daily available hours: ${hours[0]}. Current level: ${level}.
+      Return the response as a JSON array where each object represents a day.
+      Each object should have "day" (short string like "Mon", "Tue") and "slots".
+      "slots" is an array of objects with "subject" (string) and "time" (string, e.g., "9-11 AM").
+      Output ONLY raw JSON format, no markdown tags and nothing else.`;
+      
+      const response = await client.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+      });
+      
+      const textResponse = response.choices[0]?.message?.content || "[]";
+      const cleanJson = textResponse.replace(/^```json\n|\n```$/g, "").trim();
+      const plan = JSON.parse(cleanJson);
+      
+      setGeneratedPlan(plan);
       setShowPlan(true);
+    } catch (error: any) {
+      toast({ title: "Generation Failed", description: error.message || "Failed to create plan. Check your API key.", variant: "destructive" });
+      console.error(error);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -118,11 +155,12 @@ const PlannerPage = () => {
                 </div>
                 <Button
                   onClick={handleCreate}
+                  disabled={isGenerating}
                   className="w-full font-bold text-primary-foreground shadow-soft hover:scale-[1.02] transition-all bg-gradient-to-r from-genie-gold to-destructive"
                   size="lg"
                 >
-                  <Settings2 className="w-4 h-4 mr-2" />
-                  Create Study Plan
+                  {isGenerating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Settings2 className="w-4 h-4 mr-2" />}
+                  {isGenerating ? "Creating Plan..." : "Create Study Plan"}
                 </Button>
               </div>
             </motion.div>
@@ -167,7 +205,7 @@ const PlannerPage = () => {
 
                   {/* Timetable */}
                   <div className="space-y-2">
-                    {samplePlan.map((day) => (
+                    {generatedPlan.map((day) => (
                       <div key={day.day} className="flex gap-2 items-start">
                         <span className="w-10 text-xs font-bold text-primary pt-1 flex-shrink-0">{day.day}</span>
                         <div className="flex flex-wrap gap-1.5 flex-1">
