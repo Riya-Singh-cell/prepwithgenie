@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FileText, ClipboardList, Calendar, Sparkles, ArrowRight, Star, BookOpen, Lightbulb } from "lucide-react";
 import genieSmall from "@/assets/genie-small.png";
+import genieHero from "@/assets/genie-hero.png";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -95,19 +96,14 @@ const Index = () => {
               </Link>
             </div>
 
-            {/* Sparkle icon */}
+            {/* Genie illustration */}
             <motion.div
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
               className="flex justify-center"
             >
-              <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center relative">
-                <Sparkles className="w-10 h-10 text-primary" />
-                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-genie-gold flex items-center justify-center">
-                  <Star className="w-3 h-3 text-accent-foreground" />
-                </div>
-              </div>
+              <img src={genieHero} alt="PrepGenie mascot" className="w-40 h-40 md:w-56 md:h-56 object-contain drop-shadow-lg" />
             </motion.div>
           </motion.div>
         </div>
