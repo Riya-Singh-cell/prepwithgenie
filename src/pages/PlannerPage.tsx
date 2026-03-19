@@ -11,24 +11,14 @@ import { getGroqClient } from "@/lib/groq";
 import { useToast } from "@/hooks/use-toast";
 
 interface Slot {
-  subject: string;
+  topic: string;
   time: string;
 }
 
 interface DayPlan {
-  day: string;
+  date: string;
   slots: Slot[];
 }
-
-const subjectColors: Record<string, string> = {
-  Biology: "bg-genie-green/20 text-foreground border-genie-green/40",
-  Mathematics: "bg-genie-blue/20 text-foreground border-genie-blue/40",
-  Chemistry: "bg-genie-gold/20 text-foreground border-genie-gold/40",
-  Physics: "bg-genie-purple/20 text-foreground border-genie-purple/40",
-  English: "bg-genie-pink/20 text-foreground border-genie-pink/40",
-  Revision: "bg-primary/10 text-foreground border-primary/30",
-};
-
 
 
 const quotes = [
@@ -40,7 +30,10 @@ const quotes = [
 
 const PlannerPage = () => {
   const [subjects, setSubjects] = useState("");
-  const [examDate, setExamDate] = useState("");
+  const [startDate, setStartDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [endDate, setEndDate] = useState("");
+  const [startTime, setStartTime] = useState("17:00");
+  const [endTime, setEndTime] = useState("21:00");
   const [hours, setHours] = useState([4]);
   const [level, setLevel] = useState("");
   const [showPlan, setShowPlan] = useState(false);
@@ -49,7 +42,7 @@ const PlannerPage = () => {
   const { toast } = useToast();
 
   const handleCreate = async () => {
-    if (!subjects || !examDate || !level) {
+    if (!subjects || !startDate || !endDate || !level) {
       toast({ title: "Missing fields", description: "Please fill in all details.", variant: "destructive" });
       return;
     }
@@ -57,11 +50,16 @@ const PlannerPage = () => {
     setIsGenerating(true);
     try {
       const client = getGroqClient();
-      const prompt = `Create a 7-day study timetable (Mon-Sun) for a student preparing for an exam on ${examDate}.
-      Subjects to study: ${subjects}. Daily available hours: ${hours[0]}. Current level: ${level}.
-      Return the response as a JSON array where each object represents a day.
-      Each object should have "day" (short string like "Mon", "Tue") and "slots".
-      "slots" is an array of objects with "subject" (string) and "time" (string, e.g., "9-11 AM").
+      const prompt = `Create a highly tailored study timetable strictly from ${startDate} to ${endDate}.
+      Topics/Chapters requested: "${subjects}".
+      CRITICAL INSTRUCTION: If broad chapters are provided (like "biology chapter cell"), YOU MUST smartly break them down into specific logical sub-topics (e.g., cell membrane, organelles, mitosis) and distribute them with sensible weightages across the dates. Do NOT endlessly repeat the exact same broad string.
+      The student is available to study between ${startTime} and ${endTime} for a total of ${hours[0]} hours each day. Schedule the slots STRICTLY within this timeframe.
+      Current level: ${level}.
+      
+      Return the response strictly as a JSON array where each object represents exactly one date in the range.
+      Each object must have:
+      - "date": string (e.g. "Mon, Mar 21")
+      - "slots": array of objects having "topic" (string, the inferred specific sub-topic) and "time" (string, e.g., "17:00-18:30" matching within the ${startTime}-${endTime} timeframe).
       Output ONLY raw JSON format, no markdown tags and nothing else.`;
       
       const response = await client.chat.completions.create({
@@ -121,12 +119,28 @@ const PlannerPage = () => {
                     rows={4}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-bold mb-2 block">Exam Date</label>
-                  <Input type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-bold mb-2 block">Start Date</label>
+                    <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="text-sm font-bold mb-2 block">End Date (Target)</label>
+                    <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-bold mb-2 block">Available From</label>
+                    <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="text-sm font-bold mb-2 block">Available To</label>
+                    <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+                  </div>
                 </div>
                 <div>
-                  <label className="text-sm font-bold mb-3 block">Daily Available Hours: {hours[0]}</label>
+                  <label className="text-sm font-bold mb-3 block">Total Study Target (Hours/Day): {hours[0]}</label>
                   <Slider
                     value={hours}
                     onValueChange={setHours}
@@ -194,28 +208,21 @@ const PlannerPage = () => {
 
                   <h3 className="text-lg font-extrabold text-center mb-4">Your Weekly Plan 📅</h3>
 
-                  {/* Legend */}
-                  <div className="flex flex-wrap gap-2 justify-center mb-4">
-                    {Object.entries(subjectColors).map(([subject, classes]) => (
-                      <span key={subject} className={`px-2 py-1 rounded-full text-xs font-semibold border ${classes}`}>
-                        {subject}
-                      </span>
-                    ))}
-                  </div>
-
                   {/* Timetable */}
-                  <div className="space-y-2">
-                    {generatedPlan.map((day) => (
-                      <div key={day.day} className="flex gap-2 items-start">
-                        <span className="w-10 text-xs font-bold text-primary pt-1 flex-shrink-0">{day.day}</span>
-                        <div className="flex flex-wrap gap-1.5 flex-1">
+                  <div className="space-y-4">
+                    {generatedPlan.map((day, idx) => (
+                      <div key={idx} className="flex flex-col sm:flex-row gap-3 sm:gap-5 items-start border-b border-border/50 pb-4 last:border-0">
+                        <span className="w-24 text-sm font-bold text-primary pt-1 flex-shrink-0">{day.date}</span>
+                        <div className="flex flex-wrap gap-2 flex-1">
                           {day.slots.map((slot, si) => (
                             <div
                               key={si}
-                              className={`rounded-lg px-3 py-1.5 border text-xs ${subjectColors[slot.subject] || "bg-secondary border-border"}`}
+                              className="rounded-lg px-3 py-2 bg-secondary/50 border border-border/80 text-xs flex flex-col gap-1.5 shadow-sm hover:shadow transition-all"
                             >
-                              <span className="font-bold">{slot.subject}</span>
-                              <span className="text-muted-foreground ml-1">{slot.time}</span>
+                              <span className="font-bold text-foreground text-[13px]">{slot.topic}</span>
+                              <span className="text-muted-foreground font-medium flex items-center gap-1">
+                                <Clock className="w-3 h-3 text-primary/70" /> {slot.time}
+                              </span>
                             </div>
                           ))}
                         </div>
