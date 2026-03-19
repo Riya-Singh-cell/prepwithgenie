@@ -1,6 +1,6 @@
 # PrepGenie
 
-**[🔗 Live Demo](https://prepareewithgeniee.vercel.app/)**
+**[🔗 Live Demo](https://prepwithgenie.vercel.app/)**
 
 PrepGenie is an AI-powered web application designed to supercharge your study sessions. The system helps you learn faster by generating highly customized study notes, building personalized weekly timetables, and crafting dynamic interactive mock tests based on your exact syllabus.
 
