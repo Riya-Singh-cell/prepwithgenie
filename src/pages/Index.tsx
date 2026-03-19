@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FileText, ClipboardList, Calendar, Sparkles, ArrowRight, Star, BookOpen, Lightbulb } from "lucide-react";
 import genieSmall from "@/assets/genie-small.png";
+import genieHero from "@/assets/genie-hero.png";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
