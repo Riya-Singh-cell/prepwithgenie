@@ -52,4 +52,4 @@ This project is developed for educational tools and productivity enhancement. It
 
 ## 👩‍💻 Author
 **Riya Singh**  
-AI/ML Enthusiast | Full-Stack Developer
+AI/ML Engineer
