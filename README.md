@@ -1,73 +1,55 @@
-# Welcome to your Lovable project
+# PrepGenie
 
-## Project info
+**[🔗 Live Demo](https://prepwithgenieee-gnvx3ebit-riya-singh-cells-projects.vercel.app/)**
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+PrepGenie is an AI-powered web application designed to supercharge your study sessions. The system helps you learn faster by generating highly customized study notes, building personalized weekly timetables, and crafting dynamic interactive mock tests based on your exact syllabus.
 
-## How can I edit this code?
+The core of the application relies on the lightning-fast Groq API running the `llama-3.3-70b-versatile` model to provide structure, scheduling, and quizzing on-the-fly.
 
-There are several ways of editing your application.
+## 🚀 Project Objective
+The goal of this project is to:
+- Build an intelligent educational assistant
+- Leverage Large Language Models (LLMs) to generate structured output (JSON)
+- Create interactive UI components for studying and mock testing
+- Deliver ultra-low latency AI interactions using Groq
 
-**Use Lovable**
+## 🧠 Artificial Intelligence Approach
+The system uses:
+- The Groq SDK for near-instant inference
+- The `llama-3.3-70b-versatile` model
+- Strict JSON schematic prompting for predictable and structured outputs
+- Prompt engineering targeted explicitly at educational content
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+The architecture features the following core modules:
+- **Smart Study Notes:** Instant subject summaries and key tips
+- **Study Timetable:** Customizable 7-day schedules depending on available hours
+- **Mock Tests:** Interactive MCQ, True/False, Short Answer, and Essay grading with AI-provided "Ideal Answers".
 
-Changes made via Lovable will be committed automatically to this repo.
+## 📥 Input Features
+The application takes in various parameters to fully customize the AI output:
+- **Subject / Exam Name**
+- **Exam Type** (Board, Competitive, Entrance, University)
+- **Detailed Syllabus Content** 
+- **Skill Level & Available Hours** (for planning)
 
-**Use your preferred IDE**
+These inputs are combined and sent as structured context into the LLM to yield personalized study aids.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🏗️ Tech Stack
+- **Frontend Framework:** React, Vite, TypeScript
+- **Styling:** Tailwind CSS, shadcn/ui, Framer Motion
+- **AI Integration:** Groq API (`groq-sdk`)
+- **Routing:** React Router
+- **Icons:** Lucide React
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🎯 Key Highlights
+- Real-time dynamic JSON generation for complex UI rendering
+- Subjective test evaluation and "Ideal Answer" reveal
+- Beautiful, modern, and engaging user interface
+- Ultra-fast responses powered by Groq's specialized inference engine
 
-Follow these steps:
+## ⚠️ Disclaimer
+This project is developed for educational tools and productivity enhancement. It is highly recommended to always cross-verify AI-generated study material with your official course textbooks and resources.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 👩‍💻 Author
+**Riya Singh**  
+AI/ML Enthusiast | Full-Stack Developer
