@@ -2,10 +2,6 @@ import { Link, useLocation } from "react-router-dom";
 import { Home, FileText, ClipboardList, Calendar, Users, Menu, X, Sparkles, Settings } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 
 const navItems = [
   { path: "/", label: "Home", icon: Home },
@@ -18,15 +14,6 @@ const navItems = [
 const Navbar = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [apiKey, setApiKey] = useState(localStorage.getItem("GROQ_API_KEY") || "");
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { toast } = useToast();
-
-  const handleSaveApiKey = () => {
-    localStorage.setItem("GROQ_API_KEY", apiKey);
-    toast({ title: "API Key Saved", description: "Your Groq API Key has been saved successfully." });
-    setIsSettingsOpen(false);
-  };
 
   return (
     <nav className="sticky top-0 z-50 bg-card/90 backdrop-blur-lg border-b border-border">
@@ -55,36 +42,6 @@ const Navbar = () => {
               </Link>
             );
           })}
-          
-          <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-            <DialogTrigger asChild>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary border-2 border-transparent transition-all duration-200">
-                <Settings className="w-4 h-4" />
-                API Key
-              </button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Settings</DialogTitle>
-                <DialogDescription>
-                  Enter your Groq API key to enable AI features like generating notes and timetables.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex flex-col gap-4 py-4">
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="api-key" className="text-sm font-medium">Groq API Key</label>
-                  <Input
-                    id="api-key"
-                    type="password"
-                    placeholder="AIzaSy..."
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                  />
-                </div>
-                <Button onClick={handleSaveApiKey} className="w-full">Save Key</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
 
         {/* Mobile toggle */}
