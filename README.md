@@ -1,3 +1,4 @@
+## PrepGenie
 ## 🌐 Live Demo
 
 👉 **[Try PrepGenie](https://prepwithgenie.vercel.app/)**
