@@ -4,9 +4,14 @@ import { FileText, Sparkles, BookOpen, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import genieSmall from "@/assets/genie-small.png";
-import { getGroqClient } from "@/lib/groq";
 import { useToast } from "@/hooks/use-toast";
 
 interface Note {
@@ -22,38 +27,56 @@ const NotesPage = () => {
   const [showResults, setShowResults] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedNotes, setGeneratedNotes] = useState<Note[]>([]);
+  const [downloadUrl, setDownloadUrl] = useState(""); // ✅ NEW
+
   const { toast } = useToast();
 
   const handleGenerate = async () => {
     if (!subject || !examType) {
-      toast({ title: "Missing fields", description: "Please enter your subject and exam type.", variant: "destructive" });
+      toast({
+        title: "Missing fields",
+        description: "Please enter your subject and exam type.",
+        variant: "destructive",
+      });
       return;
     }
-    
+
     setIsGenerating(true);
+
     try {
-      const client = getGroqClient();
-      const prompt = `Generate study notes for the subject "${subject}" preparing for an "${examType}" exam.
-      Syllabus/Topics: ${syllabus || "General overview of key concepts."}
-      Return the response as a JSON array where each object has the keys: "topic", "notes", and "tip".
-      "topic" is the concept name. "notes" is a well-formatted summary of the concept. "tip" is a quick study tip.
-      Output ONLY raw JSON format, no markdown tags and nothing else.`;
-      
-      const response = await client.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-      });
-      
-      const textResponse = response.choices[0]?.message?.content || "[]";
-      const cleanJson = textResponse.replace(/^```json\n|\n```$/g, "").trim();
-      const notes = JSON.parse(cleanJson);
-      
-      setGeneratedNotes(notes);
-      setShowResults(true);
+      // ✅ CALL BACKEND (NOT GROQ DIRECTLY)
+      const response = await fetch(
+        `http://127.0.0.1:8000/generate-notes/?topic=${subject}`,
+        {
+          method: "POST",
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.url) {
+        setDownloadUrl(data.url);
+
+        // Optional UI notes (since actual notes are in file)
+        setGeneratedNotes([
+          {
+            topic: subject,
+            notes:
+              "Your notes have been generated and stored in the cloud successfully.",
+            tip: "Click the download button below to access full notes.",
+          },
+        ]);
+
+        setShowResults(true);
+      } else {
+        throw new Error("No URL returned from backend");
+      }
     } catch (error: any) {
-      toast({ title: "Generation Failed", description: error.message || "Failed to generate notes. Check your API key.", variant: "destructive" });
-      console.error(error);
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -61,6 +84,7 @@ const NotesPage = () => {
 
   return (
     <div className="min-h-screen">
+      {/* HEADER */}
       <section className="gradient-hero py-12">
         <div className="container mx-auto px-4 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -68,12 +92,17 @@ const NotesPage = () => {
               <FileText className="w-4 h-4" />
               Notes Generator
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold mb-2">Generate Smart Study Notes</h1>
-            <p className="text-muted-foreground max-w-lg mx-auto">Enter your details and let PrepGenie create comprehensive notes for you.</p>
+            <h1 className="text-3xl md:text-4xl font-extrabold mb-2">
+              Generate Smart Study Notes
+            </h1>
+            <p className="text-muted-foreground max-w-lg mx-auto">
+              Enter your details and let PrepGenie create comprehensive notes for you.
+            </p>
           </motion.div>
         </div>
       </section>
 
+      {/* INPUT FORM */}
       <section className="py-12">
         <div className="container mx-auto px-4 max-w-2xl">
           <motion.div
@@ -84,16 +113,27 @@ const NotesPage = () => {
           >
             <div className="flex items-center gap-3 mb-6">
               <BookOpen className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-bold">Tell us what you're studying</h2>
+              <h2 className="text-lg font-bold">
+                Tell us what you're studying
+              </h2>
             </div>
 
             <div className="space-y-5">
               <div>
-                <label className="text-sm font-semibold mb-2 block">Subject</label>
-                <Input placeholder="e.g., Biology, Mathematics, History" value={subject} onChange={(e) => setSubject(e.target.value)} />
+                <label className="text-sm font-semibold mb-2 block">
+                  Syllabus along with subject name
+                </label>
+                <Input
+                  placeholder="e.g., DBMS"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                />
               </div>
+
               <div>
-                <label className="text-sm font-semibold mb-2 block">Exam Type</label>
+                <label className="text-sm font-semibold mb-2 block">
+                  Exam Type
+                </label>
                 <Select value={examType} onValueChange={setExamType}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select exam type" />
@@ -103,16 +143,22 @@ const NotesPage = () => {
                     <SelectItem value="entrance">Entrance Exam</SelectItem>
                     <SelectItem value="competitive">Competitive Exam</SelectItem>
                     <SelectItem value="university">University Exam</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <label className="text-sm font-semibold mb-2 block">Syllabus / Topics</label>
-                <Textarea placeholder="Paste your syllabus or list the topics you need notes for..." value={syllabus} onChange={(e) => setSyllabus(e.target.value)} rows={4} />
-              </div>
-              <Button onClick={handleGenerate} disabled={isGenerating} className="w-full gradient-cta text-primary-foreground font-bold shadow-soft hover:shadow-glow transition-shadow" size="lg">
-                {isGenerating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+
+             
+
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                className="w-full"
+              >
+                {isGenerating ? (
+                  <Loader2 className="animate-spin mr-2" />
+                ) : (
+                  <Sparkles className="mr-2" />
+                )}
                 {isGenerating ? "Generating..." : "Generate Notes"}
               </Button>
             </div>
@@ -120,32 +166,35 @@ const NotesPage = () => {
         </div>
       </section>
 
+      {/* RESULTS */}
       {showResults && (
         <section className="pb-16">
           <div className="container mx-auto px-4 max-w-3xl">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-              <h2 className="text-2xl font-extrabold text-center mb-2">Your Notes Are Ready! ✨</h2>
-              <p className="text-center text-muted-foreground">Here are your AI-generated study notes for {subject}.</p>
-            </motion.div>
+            <h2 className="text-2xl font-bold text-center mb-6">
+              Your Notes Are Ready 🚀
+            </h2>
 
-            <div className="space-y-5">
-              {generatedNotes.map((note, i) => (
-                <motion.div
-                  key={note.topic}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.15 }}
-                  className="gradient-card rounded-2xl p-6 shadow-card border border-border/50 relative"
+            {generatedNotes.map((note, i) => (
+              <div key={i} className="p-6 border rounded-lg mb-4">
+                <h3 className="font-bold text-lg">{note.topic}</h3>
+                <p>{note.notes}</p>
+                <p className="text-sm mt-2">💡 {note.tip}</p>
+              </div>
+            ))}
+
+            {/* ✅ DOWNLOAD BUTTON */}
+            {downloadUrl && (
+              <div className="text-center mt-6">
+                <a
+                  href={downloadUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-green-600 text-white px-6 py-3 rounded-lg font-bold"
                 >
-                  <h3 className="text-lg font-bold mb-3 text-primary">{note.topic}</h3>
-                  <p className="text-foreground leading-relaxed mb-4">{note.notes}</p>
-                  <div className="flex items-center gap-2 bg-accent/20 rounded-lg px-4 py-2">
-                    <img src={genieSmall} alt="Genie tip" className="w-6 h-6" />
-                    <span className="text-sm font-semibold text-accent-foreground">💡 {note.tip}</span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  ⬇ Download Notes
+                </a>
+              </div>
+            )}
           </div>
         </section>
       )}
