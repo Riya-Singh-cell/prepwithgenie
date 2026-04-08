@@ -1,8 +1,8 @@
 ## PrepGenie
 
-PrepGenie is an AI-powered full-stack web application designed to supercharge your study sessions. It helps students generate structured study notes, store them in the cloud, and download them anytime as files (PDF/Text).
+PrepGenie is an AI-powered full-stack web application designed to supercharge study sessions. It enables students to generate structured study notes, store them in the cloud, and download them anytime as files.
 
-The system integrates AI-powered content generation with a scalable backend and cloud storage, making learning more efficient and accessible.
+The system integrates AI-driven content generation with a scalable backend and cloud storage, making learning more efficient, accessible, and persistent.
 
 ---
 
@@ -33,11 +33,13 @@ The AI generates:
 - Key concepts with explanations  
 - Quick summaries for revision  
 
+---
+
 ## ☁️ Cloud Integration (AWS S3)
 
 - Implemented AWS S3 for persistent storage of generated notes  
-- Files are uploaded using `boto3` SDK  
-- Each file is uniquely named using UUID  
+- Files are uploaded using the `boto3` SDK  
+- Each file is uniquely named using UUID to prevent overwriting  
 - Public URLs are generated for instant access and download  
 - Enables scalability and multi-user support  
 
@@ -47,7 +49,7 @@ The AI generates:
 
 - 📚 AI-generated study notes  
 - ☁️ Cloud storage using AWS S3  
-- ⬇️ Downloadable notes (PDF/Text)  
+- ⬇️ Downloadable notes (Text File)  
 - ⚡ Real-time API communication  
 - 🎯 Clean and responsive UI  
 - 🔁 End-to-end full-stack integration  
@@ -76,7 +78,6 @@ The AI generates:
 
 ### Libraries / Tools
 - boto3  
-- reportlab (PDF generation)  
 - python-dotenv  
 
 ---
@@ -84,7 +85,7 @@ The AI generates:
 ## ⚙️ Key Implementation Details
 
 - Built a REST API pipeline for AI-based note generation  
-- Converted generated notes into downloadable files (PDF/Text)  
+- Generated notes dynamically using LLMs  
 - Integrated AWS S3 for cloud storage and retrieval  
 - Managed environment variables securely using `.env`  
 - Handled CORS for frontend-backend communication  
@@ -122,5 +123,3 @@ This project is developed for educational purposes. Always cross-check AI-genera
 
 **Riya Singh**  
 AI/ML Engineer  
-
-## 🏗️ System Architecture
