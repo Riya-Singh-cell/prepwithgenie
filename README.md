@@ -33,23 +33,6 @@ The AI generates:
 - Key concepts with explanations  
 - Quick summaries for revision  
 
----
-Frontend (React)
-↓
-FastAPI Backend
-↓
-Groq LLM (Notes Generation)
-↓
-PDF/Text File Generation
-↓
-AWS S3 (Cloud Storage)
-↓
-Public URL Returned
-↓
-Frontend Download Button
-
----
-
 ## ☁️ Cloud Integration (AWS S3)
 
 - Implemented AWS S3 for persistent storage of generated notes  
