@@ -1,56 +1,143 @@
 ## PrepGenie
-## 🌐 Live Demo
 
-👉 **[Try PrepGenie](https://prepwithgenie.vercel.app/)**
+PrepGenie is an AI-powered full-stack web application designed to supercharge your study sessions. It helps students generate structured study notes, store them in the cloud, and download them anytime as files (PDF/Text).
 
-PrepGenie is an AI-powered web application designed to supercharge your study sessions. The system helps you learn faster by generating highly customized study notes, building personalized weekly timetables, and crafting dynamic interactive mock tests based on your exact syllabus.
+The system integrates AI-powered content generation with a scalable backend and cloud storage, making learning more efficient and accessible.
 
-The core of the application relies on the lightning-fast Groq API running the `llama-3.3-70b-versatile` model to provide structure, scheduling, and quizzing on-the-fly.
+---
 
 ## 🚀 Project Objective
+
 The goal of this project is to:
-- Build an intelligent educational assistant
-- Leverage Large Language Models (LLMs) to generate structured output (JSON)
-- Create interactive UI components for studying and mock testing
-- Deliver ultra-low latency AI interactions using Groq
+
+- Build an intelligent AI-powered educational assistant  
+- Integrate Large Language Models (LLMs) into a real-world application  
+- Design a full-stack architecture with frontend, backend, and cloud  
+- Enable persistent storage and downloadable study material  
+- Create a scalable system using cloud technologies  
+
+---
 
 ## 🧠 Artificial Intelligence Approach
+
 The system uses:
-- The Groq SDK for near-instant inference
-- The `llama-3.3-70b-versatile` model
-- Strict JSON schematic prompting for predictable and structured outputs
-- Prompt engineering targeted explicitly at educational content
 
-The architecture features the following core modules:
-- **Smart Study Notes:** Instant subject summaries and key tips
-- **Study Timetable:** Customizable 7-day schedules depending on available hours
-- **Mock Tests:** Interactive MCQ, True/False, Short Answer, and Essay grading with AI-provided "Ideal Answers".
+- Groq API for fast LLM inference  
+- `llama-3.3-70b-versatile` model  
+- Prompt engineering to generate structured and concise notes  
+- Optimized token usage for faster responses  
 
-## 📥 Input Features
-The application takes in various parameters to fully customize the AI output:
-- **Subject / Exam Name**
-- **Exam Type** (Board, Competitive, Entrance, University)
-- **Detailed Syllabus Content** 
-- **Skill Level & Available Hours** (for planning)
+The AI generates:
 
-These inputs are combined and sent as structured context into the LLM to yield personalized study aids.
+- Short structured notes  
+- Key concepts with explanations  
+- Quick summaries for revision  
+
+---
+Frontend (React)
+↓
+FastAPI Backend
+↓
+Groq LLM (Notes Generation)
+↓
+PDF/Text File Generation
+↓
+AWS S3 (Cloud Storage)
+↓
+Public URL Returned
+↓
+Frontend Download Button
+
+---
+
+## ☁️ Cloud Integration (AWS S3)
+
+- Implemented AWS S3 for persistent storage of generated notes  
+- Files are uploaded using `boto3` SDK  
+- Each file is uniquely named using UUID  
+- Public URLs are generated for instant access and download  
+- Enables scalability and multi-user support  
+
+---
+
+## 📥 Features
+
+- 📚 AI-generated study notes  
+- ☁️ Cloud storage using AWS S3  
+- ⬇️ Downloadable notes (PDF/Text)  
+- ⚡ Real-time API communication  
+- 🎯 Clean and responsive UI  
+- 🔁 End-to-end full-stack integration  
+
+---
 
 ## 🏗️ Tech Stack
-- **Frontend Framework:** React, Vite, TypeScript
-- **Styling:** Tailwind CSS, shadcn/ui, Framer Motion
-- **AI Integration:** Groq API (`groq-sdk`)
-- **Routing:** React Router
-- **Icons:** Lucide React
 
-## 🎯 Key Highlights
-- Real-time dynamic JSON generation for complex UI rendering
-- Subjective test evaluation and "Ideal Answer" reveal
-- Beautiful, modern, and engaging user interface
-- Ultra-fast responses powered by Groq's specialized inference engine
+### Frontend
+- React  
+- Vite  
+- TypeScript  
+- Tailwind CSS  
+- shadcn/ui  
+- Framer Motion  
+
+### Backend
+- FastAPI (Python)  
+- REST APIs  
+
+### AI
+- Groq API (LLMs)  
+
+### Cloud
+- AWS S3 (Object Storage)  
+
+### Libraries / Tools
+- boto3  
+- reportlab (PDF generation)  
+- python-dotenv  
+
+---
+
+## ⚙️ Key Implementation Details
+
+- Built a REST API pipeline for AI-based note generation  
+- Converted generated notes into downloadable files (PDF/Text)  
+- Integrated AWS S3 for cloud storage and retrieval  
+- Managed environment variables securely using `.env`  
+- Handled CORS for frontend-backend communication  
+- Optimized performance by reducing token size and prompt complexity  
+
+---
+
+## 🚧 Challenges Faced
+
+- Integrating frontend, backend, AI, and cloud into one system  
+- Handling CORS and API connectivity issues  
+- Managing Python environments and dependencies  
+- Configuring AWS S3 permissions and bucket policies  
+- Balancing LLM response quality with performance  
+
+---
+
+## 🔮 Future Improvements
+
+- 🔐 Secure downloads using pre-signed URLs  
+- 👤 User authentication system  
+- 📊 User dashboard with saved notes  
+- 📱 Mobile-friendly version  
+- 🧠 Adaptive AI-based recommendations  
+
+---
 
 ## ⚠️ Disclaimer
-This project is developed for educational tools and productivity enhancement. It is highly recommended to always cross-verify AI-generated study material with your official course textbooks and resources.
+
+This project is developed for educational purposes. Always cross-check AI-generated content with official study material.
+
+---
 
 ## 👩‍💻 Author
+
 **Riya Singh**  
-AI/ML Engineer
+AI/ML Engineer  
+
+## 🏗️ System Architecture
